@@ -6,7 +6,12 @@
 
 المشروع مستقل عن SAEED ROYALE وعن العمل القائم في Claude. لا تُنقل شيفرة أو مشاهد أو خرائط أو أصول من تلك المشاريع. لوحة SAEED ROYALE الظاهرة في محادثة التخطيط كانت مرجعًا عامًا لتقسيم الكتالوج فقط؛ ملفها المرفوع غير متاح كملف داخل بيئة العمل.
 
-![Octopus S1 concept board](artwork/concept/octopus-s1-concept-board.jpg)\n\n*لوحة مفهوم أولية؛ ليست لقطة من Unity أو دليل لعب.*\n\n## التوجه\n
+![Octopus S1 concept board](artwork/concept/octopus-s1-concept-board.jpg)
+
+*لوحة مفهوم أولية؛ ليست لقطة من Unity أو دليل لعب.*
+
+## التوجه
+
 - لاعب منفرد يستكشف عالمًا صحراويًا خياليًا.
 - رفيق روبوت أخطبوط يساعد على الكشف وجمع الإمدادات وإعادة تشغيل الإرسال.
 - الحلقة الأولى: استكشاف → موارد → تفعيل محطة → إخلاء.
@@ -30,7 +35,9 @@
 
 - [ميثاق المشروع](docs/01_PROJECT_CHARTER_AR.md)
 - [كتالوج اللعبة والموقع والأصول](docs/02_GAME_AND_WEB_CATALOG_AR.md)
-- [خطة EVENTO Router Commander والبوابات](docs/03_ROUTER_COMMANDER_PLAN_AR.md)\n- [دليل مشروع Unity وبناء Android](docs/04_UNITY_BUILD_GUIDE_AR.md)\n- [معاينة الموقع الثنائي اللغة](website/index.html)
+- [خطة EVENTO Router Commander والبوابات](docs/03_ROUTER_COMMANDER_PLAN_AR.md)
+- [دليل مشروع Unity وبناء Android](docs/04_UNITY_BUILD_GUIDE_AR.md)
+- [معاينة الموقع الثنائي اللغة](website/index.html)
 
 ## بيئة البناء
 
