@@ -20,6 +20,7 @@ public sealed class OctopusS1Prototype : MonoBehaviour
     private float scanUntil;
     private float cameraYaw = 0f;
     private Vector2 moveInput;
+    private Vector2 virtualMoveInput;
     private bool interactRequested;
     private bool scanRequested;
     private const float WalkSpeed = 4.4f;
@@ -49,8 +50,13 @@ public sealed class OctopusS1Prototype : MonoBehaviour
             scanRequested = false;
             scanPulse = true;
             scanUntil = Time.time + 1.6f;
+            SetResourceScanGlow(true);
         }
-        if (Time.time > scanUntil) scanPulse = false;
+        if (scanPulse && Time.time > scanUntil)
+        {
+            scanPulse = false;
+            SetResourceScanGlow(false);
+        }
 
         CollectNearbyResources();
         if (interactRequested)
@@ -63,8 +69,9 @@ public sealed class OctopusS1Prototype : MonoBehaviour
     private void ReadKeyboard()
     {
         var keyboard = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        if (keyboard.sqrMagnitude > 0.04f) moveInput = Vector2.ClampMagnitude(keyboard, 1f);
-        else moveInput = Vector2.zero;
+        moveInput = keyboard.sqrMagnitude > 0.04f
+            ? Vector2.ClampMagnitude(keyboard, 1f)
+            : Vector2.ClampMagnitude(virtualMoveInput, 1f);
 
         if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Space)) interactRequested = true;
         if (Input.GetKeyDown(KeyCode.Q)) scanRequested = true;
@@ -173,6 +180,25 @@ public sealed class OctopusS1Prototype : MonoBehaviour
         else companion.localScale = Vector3.one;
     }
 
+    private void SetResourceScanGlow(bool enabled)
+    {
+        foreach (var resource in resources)
+        {
+            if (resource == null) continue;
+            var material = resource.GetComponent<Renderer>().material;
+            if (enabled)
+            {
+                material.EnableKeyword("_EMISSION");
+                material.SetColor("_EmissionColor", new Color(0.05f, 0.65f, 0.72f));
+            }
+            else
+            {
+                material.SetColor("_EmissionColor", Color.black);
+                material.DisableKeyword("_EMISSION");
+            }
+        }
+    }
+
     private void CollectNearbyResources()
     {
         foreach (var resource in resources)
@@ -211,10 +237,11 @@ public sealed class OctopusS1Prototype : MonoBehaviour
         GUI.Label(new Rect(36f, 55f, 330f, 34f), objective);
         GUI.Label(new Rect(20f, 116f, 360f, 28f), "WASD / الأسهم للحركة  •  Q للكشف  •  E للتفاعل");
 
-        if (GUI.RepeatButton(new Rect(22f, 145f, 64f, 56f), "◀")) moveInput.x = -1f;
-        if (GUI.RepeatButton(new Rect(156f, 145f, 64f, 56f), "▶")) moveInput.x = 1f;
-        if (GUI.RepeatButton(new Rect(88f, 112f, 64f, 56f), "▲")) moveInput.y = 1f;
-        if (GUI.RepeatButton(new Rect(88f, 178f, 64f, 56f), "▼")) moveInput.y = -1f;
+        var left = GUI.RepeatButton(new Rect(22f, 145f, 64f, 56f), "◀");
+        var right = GUI.RepeatButton(new Rect(156f, 145f, 64f, 56f), "▶");
+        var up = GUI.RepeatButton(new Rect(88f, 112f, 64f, 56f), "▲");
+        var down = GUI.RepeatButton(new Rect(88f, 178f, 64f, 56f), "▼");
+        virtualMoveInput = new Vector2((right ? 1f : 0f) - (left ? 1f : 0f), (up ? 1f : 0f) - (down ? 1f : 0f));
         if (GUI.Button(new Rect(width - 150f, 146f, 124f, 54f), "تفاعل")) interactRequested = true;
         if (GUI.Button(new Rect(width - 150f, 208f, 124f, 54f), "كشف")) scanRequested = true;
 
