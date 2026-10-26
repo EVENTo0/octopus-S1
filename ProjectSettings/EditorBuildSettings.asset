@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/OctopusS1Prototype.unity
+    guid: 80750578341706946afa1df92d29d138
   m_configObjects: {}

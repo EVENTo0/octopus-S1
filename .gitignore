@@ -38,3 +38,6 @@ coverage/
 .DS_Store
 Thumbs.db
 __pycache__/
+
+# Unity Android build intermediates
+.utmp/
