@@ -135,11 +135,14 @@ public static class OctopusS1Build
         PlayerSettings.productName = OctopusS1Channel.BaseProductName;
         PlayerSettings.bundleVersion = "0.1.0";
         PlayerSettings.Android.bundleVersionCode = 1;
-        PlayerSettings.Android.useCustomKeystore = false;
-        PlayerSettings.Android.keystoreName = "";
-        PlayerSettings.Android.keyaliasName = "";
-        PlayerSettings.Android.keystorePass = "";
-        PlayerSettings.Android.keyaliasPass = "";
+        if (PlayerSettings.Android.useCustomKeystore)
+        {
+            // Passwords are never serialized; clear them and the host keystore path from memory.
+            PlayerSettings.Android.keystorePass = "";
+            PlayerSettings.Android.keyaliasPass = "";
+            PlayerSettings.Android.keyaliasName = "";
+            PlayerSettings.Android.useCustomKeystore = false;
+        }
         AssetDatabase.SaveAssets();
     }
 

@@ -144,6 +144,10 @@ function Invoke-AndroidBuild {
     } catch {
         Remove-Item -LiteralPath $outDir -Recurse -Force -ErrorAction SilentlyContinue
         throw
+    } finally {
+        # The tree was verified clean before the build, so this only drops build-time
+        # PlayerSettings (channel identity, host keystore path) that Unity wrote back.
+        & git restore -- ProjectSettings/ProjectSettings.asset
     }
     $digest = (Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLowerInvariant()
     "$digest  $(Split-Path $apk -Leaf)" | Set-Content -LiteralPath "$apk.sha256" -Encoding ASCII
