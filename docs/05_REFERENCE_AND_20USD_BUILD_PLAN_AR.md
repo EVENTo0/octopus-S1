@@ -40,3 +40,7 @@
 - https://unity.com/products/pricing-updates
 - https://docs.github.com/en/billing/concepts/product-billing/github-codespaces
 - https://docs.unity.com/en-us/build-automation/advanced-build-configuration/run-custom-scripts-during-the-build-process
+
+## دليل التحقق من التحديث
+
+داخل Codespace نفسه عند الالتزام `6050ec55d757dec259c5e1c542127578c86e5960` نجح اختبارا إعداد Python (`Ran 2 tests ... OK`) وفحص صياغة Bash و`git diff --check`. تمت مزامنة الفرع بـ`git pull --ff-only`. هذه فحوص ملفات وإعداد فقط؛ لا تثبت ترجمة C# أو تشغيل hook أو Unity أو APK. فتح Unity Cloud وصل إلى شاشة Unity ID Sign in؛ الدخول مطلوب للتحقق من الحصة وربط البناء.
