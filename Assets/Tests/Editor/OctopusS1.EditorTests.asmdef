@@ -1,0 +1,8 @@
+{
+  "name": "OctopusS1.EditorTests",
+  "references": ["OctopusS1.Editor", "OctopusS1.Runtime", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"]
+}

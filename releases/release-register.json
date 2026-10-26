@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "note": "Every APK built for an application ID, on any machine. A new build must use a higher versionCode than any record here or any retained Builds/Android/<Channel>/<code> folder. Records are appended, never edited or removed.",
+  "records": [
+    {
+      "channel": "Prototype",
+      "applicationId": "com.evento.octopuss1",
+      "version": "0.1.0",
+      "versionCode": 1,
+      "commit": "f3f045a34c3074f1a6ee1600b88fca2b5bb1a682",
+      "sha256": "1e5724b1fada0c317b8ee981d61df046a1f7d0261e1097f3dd6920867f84b8b5",
+      "signerSha256": "f3e9dc669f9264b6df366eb721a3697b4c21981c577162a423aaa1af52676bd7",
+      "builtOn": "owner Windows PC",
+      "status": "superseded single-channel prototype, debug-signed with the Live application ID; never distribute"
+    },
+    {
+      "channel": "Dev",
+      "applicationId": "com.evento.octopuss1.dev",
+      "version": "0.1.0",
+      "versionCode": 1,
+      "commit": "bf8d6ecfaacdaa4822a812b57335a07bfd4d98df",
+      "sha256": "82df86f49a3d5500fe7aa091a1c9216a58f6818e29cd821b433b9e2ced92e84b",
+      "signerSha256": "f3e9dc669f9264b6df366eb721a3697b4c21981c577162a423aaa1af52676bd7",
+      "builtOn": "owner Windows PC",
+      "status": "local delivery only; retained as historical evidence"
+    }
+  ]
+}

@@ -167,6 +167,7 @@ public class MissionTests
         controller.enabled = false;
         Get<Transform>("playerRoot").position = position;
         controller.enabled = true;
+        Physics.SyncTransforms();
     }
 
     private Vector2 PauseButton => ScreenPoint((Rect)Call("PauseRect"));
@@ -203,7 +204,9 @@ public class MissionTests
         Frame();
         Assert.IsFalse(Get<bool>("relayActive"), "No stale interaction fires on resume.");
         Frame(Touch(4, InteractButton, TouchPhase.Began));
-        Assert.IsTrue(Get<bool>("relayActive"), "A new Interact after resume works.");
+        Assert.IsTrue(Get<bool>("relayActive"), "A new Interact after resume works. collected=" + Get<int>("collected") +
+            " distance=" + Vector3.Distance(Get<Transform>("playerRoot").position, Get<Transform>("relay").position) +
+            " toast=" + Get<string>("toastKey") + " state=" + State);
     }
 
     [UnityTest]
@@ -229,6 +232,19 @@ public class MissionTests
         var cancelled = player.position;
         Frame();
         Assert.Less(Vector3.Distance(cancelled, player.position), 0.01f, "A cancelled touch releases the joystick.");
+    }
+
+    [UnityTest]
+    public IEnumerator PlayerStandsOnTheGroundRightAfterStartAndRestart()
+    {
+        yield return StartGame();
+        Play();
+        for (var i = 0; i < 5; i++) Frame();
+        Assert.Greater(Get<Transform>("playerRoot").position.y, -0.5f, "First frames after start keep the player on the ground.");
+        Call("RestartMission");
+        Play();
+        for (var i = 0; i < 5; i++) Frame();
+        Assert.Greater(Get<Transform>("playerRoot").position.y, -0.5f, "First frames after restart keep the player on the ground.");
     }
 
     [Test]

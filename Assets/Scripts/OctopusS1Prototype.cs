@@ -337,6 +337,10 @@ public sealed class OctopusS1Prototype : MonoBehaviour
         var marker = MakePrimitive(PrimitiveType.Cylinder, "Relay marker placeholder", new Vector3(0f, 0.25f, 5f), new Vector3(0.8f, 0.25f, 0.8f), new Color(0.30f, 0.72f, 0.76f), false);
         marker.transform.localScale = new Vector3(0.55f, 0.15f, 0.55f);
         UpdateCamera();
+        // Colliders were just placed and scaled. Physics only syncs transforms on a simulation step,
+        // which does not run while paused (timeScale 0); without this the first Move after a
+        // restart can see the unscaled ground and fall through it.
+        Physics.SyncTransforms();
     }
 
     // Invisible walls keep the player on the blockout ground.
@@ -511,6 +515,7 @@ public sealed class OctopusS1Prototype : MonoBehaviour
         playerRoot.position = SpawnPoint;
         playerRoot.rotation = Quaternion.identity;
         player.enabled = true;
+        Physics.SyncTransforms();
         companion.position = SpawnPoint + new Vector3(1.1f, 0.5f, -0.8f);
         cameraYaw = 0f;
         UpdateCamera();

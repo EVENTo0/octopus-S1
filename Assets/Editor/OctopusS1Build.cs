@@ -70,6 +70,89 @@ public sealed class OctopusS1Release
     }
 }
 
+/// <summary>
+/// Every project/editor setting a channel build touches, captured before and restored after
+/// the build (success or failure). Keystore name/alias are read and written as raw serialized
+/// values: the public setter turns "" into "{inproject}: ".
+/// </summary>
+public sealed class OctopusS1BuildState
+{
+    private string applicationId, productName, bundleVersion, keystoreName, keyaliasName, keystorePass, keyaliasPass;
+    private int versionCode;
+    private bool useCustomKeystore, development, allowDebugging, connectProfiler, buildAppBundle, deepProfiling;
+    private AndroidSdkVersions minSdk;
+    private ScriptingImplementation backend;
+    private AndroidArchitecture architectures;
+    private UIOrientation orientation;
+    private EditorBuildSettingsScene[] scenes;
+
+    public static OctopusS1BuildState Capture()
+    {
+        var player = PlayerSettingsObject();
+        return new OctopusS1BuildState {
+            applicationId = PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.Android),
+            productName = PlayerSettings.productName,
+            bundleVersion = PlayerSettings.bundleVersion,
+            versionCode = PlayerSettings.Android.bundleVersionCode,
+            useCustomKeystore = PlayerSettings.Android.useCustomKeystore,
+            keystoreName = player.FindProperty("AndroidKeystoreName").stringValue,
+            keyaliasName = player.FindProperty("AndroidKeyaliasName").stringValue,
+            keystorePass = PlayerSettings.Android.keystorePass,
+            keyaliasPass = PlayerSettings.Android.keyaliasPass,
+            minSdk = PlayerSettings.Android.minSdkVersion,
+            backend = PlayerSettings.GetScriptingBackend(NamedBuildTarget.Android),
+            architectures = PlayerSettings.Android.targetArchitectures,
+            orientation = PlayerSettings.defaultInterfaceOrientation,
+            development = EditorUserBuildSettings.development,
+            allowDebugging = EditorUserBuildSettings.allowDebugging,
+            connectProfiler = EditorUserBuildSettings.connectProfiler,
+            buildAppBundle = EditorUserBuildSettings.buildAppBundle,
+            deepProfiling = EditorUserBuildSettings.buildWithDeepProfilingSupport,
+            scenes = EditorBuildSettings.scenes
+        };
+    }
+
+    public void Restore()
+    {
+        PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, applicationId);
+        PlayerSettings.productName = productName;
+        PlayerSettings.bundleVersion = bundleVersion;
+        PlayerSettings.Android.bundleVersionCode = versionCode;
+        PlayerSettings.Android.keystorePass = keystorePass;
+        PlayerSettings.Android.keyaliasPass = keyaliasPass;
+        PlayerSettings.Android.useCustomKeystore = useCustomKeystore;
+        var player = PlayerSettingsObject();
+        player.FindProperty("AndroidKeystoreName").stringValue = keystoreName;
+        player.FindProperty("AndroidKeyaliasName").stringValue = keyaliasName;
+        player.ApplyModifiedPropertiesWithoutUndo();
+        PlayerSettings.Android.minSdkVersion = minSdk;
+        PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, backend);
+        PlayerSettings.Android.targetArchitectures = architectures;
+        PlayerSettings.defaultInterfaceOrientation = orientation;
+        EditorUserBuildSettings.development = development;
+        EditorUserBuildSettings.allowDebugging = allowDebugging;
+        EditorUserBuildSettings.connectProfiler = connectProfiler;
+        EditorUserBuildSettings.buildAppBundle = buildAppBundle;
+        EditorUserBuildSettings.buildWithDeepProfilingSupport = deepProfiling;
+        EditorBuildSettings.scenes = scenes;
+    }
+
+    /// <summary>Comparable description. Passwords are reported only as set or unset.</summary>
+    public string Describe()
+    {
+        var sceneList = new System.Text.StringBuilder();
+        foreach (var scene in scenes) sceneList.Append(scene.path).Append(scene.enabled ? "+" : "-").Append(';');
+        return string.Join("|", new[] {
+            applicationId, productName, bundleVersion, versionCode.ToString(), useCustomKeystore.ToString(),
+            keystoreName, keyaliasName, (!string.IsNullOrEmpty(keystorePass)).ToString(), (!string.IsNullOrEmpty(keyaliasPass)).ToString(),
+            minSdk.ToString(), backend.ToString(), architectures.ToString(), orientation.ToString(), development.ToString(),
+            allowDebugging.ToString(), connectProfiler.ToString(), buildAppBundle.ToString(), deepProfiling.ToString(), sceneList.ToString() });
+    }
+
+    private static SerializedObject PlayerSettingsObject() =>
+        new SerializedObject(Unsupported.GetSerializedAssetInterfaceSingleton("PlayerSettings"));
+}
+
 public static class OctopusS1Build
 {
     public const string UnityVersion = "6000.6.4f1";
@@ -85,15 +168,18 @@ public static class OctopusS1Build
         if (!EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android))
             throw new InvalidOperationException("Could not switch to Android.");
         if (!File.Exists(ScenePath)) OctopusS1SceneBuilder.BuildPrototypeScene();
-        EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+        ApplyChannelSettings(release);
+    }
 
+    // Channel identity is applied after scene generation so it cannot be overwritten.
+    public static void ApplyChannelSettings(OctopusS1Release release)
+    {
+        EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
         PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
         PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
         EditorUserBuildSettings.buildAppBundle = false;
-
-        // Channel identity is applied last so scene generation cannot overwrite it.
         PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, release.Channel.ApplicationId);
         PlayerSettings.productName = release.Channel.ProductName;
         PlayerSettings.bundleVersion = release.Version;
@@ -101,6 +187,7 @@ public static class OctopusS1Build
         EditorUserBuildSettings.development = release.Channel.Development;
         EditorUserBuildSettings.allowDebugging = false;
         EditorUserBuildSettings.connectProfiler = false;
+        EditorUserBuildSettings.buildWithDeepProfilingSupport = false;
         ApplySigning(release.Channel);
     }
 
@@ -128,28 +215,25 @@ public static class OctopusS1Build
         PlayerSettings.Android.keyaliasPass = aliasPass;
     }
 
-    // Restores the committed base identity so a build never leaves host paths or channel values in ProjectSettings.
-    private static void RestoreBaseSettings()
+    /// <summary>Runs a build step and always restores the settings it may have changed.</summary>
+    public static void WithRestoredSettings(Action buildStep)
     {
-        PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, OctopusS1Channel.BaseApplicationId);
-        PlayerSettings.productName = OctopusS1Channel.BaseProductName;
-        PlayerSettings.bundleVersion = "0.1.0";
-        PlayerSettings.Android.bundleVersionCode = 1;
-        if (PlayerSettings.Android.useCustomKeystore)
+        var before = OctopusS1BuildState.Capture();
+        try
         {
-            // Passwords are never serialized; clear them and the host keystore path from memory.
-            PlayerSettings.Android.keystorePass = "";
-            PlayerSettings.Android.keyaliasPass = "";
-            PlayerSettings.Android.keyaliasName = "";
-            PlayerSettings.Android.useCustomKeystore = false;
+            buildStep();
         }
-        AssetDatabase.SaveAssets();
+        finally
+        {
+            before.Restore();
+            AssetDatabase.SaveAssets();
+        }
     }
 
     public static void Android()
     {
         var release = OctopusS1Release.FromCommandLine(true);
-        try
+        WithRestoredSettings(() =>
         {
             PrepareAndroid(release);
             Directory.CreateDirectory(Path.GetDirectoryName(release.OutputPath));
@@ -162,11 +246,7 @@ public static class OctopusS1Build
             if (report.summary.result != BuildResult.Succeeded)
                 throw new InvalidOperationException("Android build failed: " + report.summary.result);
             Debug.Log("Octopus S1 " + release.Channel.Name + " " + release.Version + " (" + release.VersionCode + ") built at " + release.OutputPath);
-        }
-        finally
-        {
-            RestoreBaseSettings();
-        }
+        });
     }
 }
 #endif

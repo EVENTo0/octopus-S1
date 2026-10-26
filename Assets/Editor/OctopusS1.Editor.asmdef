@@ -1,0 +1,5 @@
+{
+  "name": "OctopusS1.Editor",
+  "references": ["OctopusS1.Runtime"],
+  "includePlatforms": ["Editor"]
+}

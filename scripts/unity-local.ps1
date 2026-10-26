@@ -24,6 +24,14 @@ $UnityEditor = (Resolve-Path -LiteralPath $UnityEditor).Path
 $android = Join-Path (Split-Path $UnityEditor -Parent) "Data\PlaybackEngines\AndroidPlayer"
 $logRoot = Join-Path $repoRoot "Logs"
 New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
+Import-Module (Join-Path $PSScriptRoot "OctopusS1.Release.psm1") -Force
+$editorVersion = "$((Get-Item -LiteralPath $UnityEditor).VersionInfo.ProductVersion)"
+$evidencePath = Join-Path $logRoot "test-evidence.json"
+$registerPath = Join-Path $repoRoot "releases\release-register.json"
+$testPlatforms = @("EditMode", "PlayMode")
+if ($Mode -ne "doctor" -and $editorVersion -notlike "$expectedVersion*") {
+    throw "Unity at $UnityEditor is $editorVersion; this project requires $expectedVersion."
+}
 
 function Invoke-Unity([string[]]$UnityArguments) {
     # Start-Process -Wait is necessary for GUI executables on Windows.
@@ -48,26 +56,25 @@ function Get-BuildTool([string]$Name) {
     if (-not $tool) { throw "Android build tool $Name not found under the Unity SDK." }
     return $tool.FullName
 }
-function Get-PlayModeResult {
-    $resultPath = Join-Path $logRoot "playmode.xml"
-    if (-not (Test-Path -LiteralPath $resultPath)) { return $null }
-    [xml]$report = Get-Content -LiteralPath $resultPath -Raw
-    return $report.DocumentElement
-}
 function Invoke-ProjectTests {
-    $resultPath = Join-Path $logRoot "playmode.xml"
-    Remove-Item -LiteralPath $resultPath -Force -ErrorAction SilentlyContinue
-    Invoke-Unity @("-batchmode", "-nographics", "-projectPath", $repoRoot,
-        "-runTests", "-testPlatform", "PlayMode", "-testResults", $resultPath,
-        "-logFile", (Join-Path $logRoot "tests.log"))
-    $result = Get-PlayModeResult
-    if (-not $result) { throw "Unity produced no test results." }
-    if ($result.GetAttribute("result") -ne "Passed" -or
-        [int]$result.GetAttribute("total") -lt 1 -or
-        [int]$result.GetAttribute("failed") -ne 0) {
-        throw "PlayMode tests failed, or no tests ran. Inspect Logs/playmode.xml."
+    # Evidence binds the results to the exact Unity inputs and editor (review R1).
+    Remove-Item -LiteralPath $evidencePath -Force -ErrorAction SilentlyContinue
+    $before = Get-UnityInputFingerprint $repoRoot
+    $results = @()
+    foreach ($platform in $testPlatforms) {
+        $xml = Join-Path $logRoot "$($platform.ToLowerInvariant()).xml"
+        Remove-Item -LiteralPath $xml -Force -ErrorAction SilentlyContinue
+        Invoke-Unity @("-batchmode", "-nographics", "-projectPath", $repoRoot,
+            "-runTests", "-testPlatform", $platform, "-testResults", $xml,
+            "-logFile", (Join-Path $logRoot "tests-$($platform.ToLowerInvariant()).log"))
+        $results += Read-TestResult $xml $platform
     }
-    Write-Output "Unity PlayMode tests passed: $($result.GetAttribute('passed'))/$($result.GetAttribute('total'))."
+    $after = Get-UnityInputFingerprint $repoRoot
+    $changed = @(Compare-UnityInputs $before $after)
+    if ($changed.Count -gt 0) { throw "Unity inputs changed while tests ran: $($changed -join ', '). Review, commit, rerun." }
+    Write-TestEvidence $evidencePath $after $editorVersion $results "$(& git rev-parse HEAD)".Trim()
+    foreach ($r in $results) { Write-Output "$($r.Platform): $($r.Passed)/$($r.Total) passed, $($r.Skipped) skipped." }
+    Write-Output "Test evidence: inputs $($after.Fingerprint) ($($after.FileCount) files), Unity $editorVersion."
 }
 function Get-ApkFacts([string]$Apk) {
     $env:JAVA_HOME = Join-Path $android "OpenJDK"
@@ -103,25 +110,21 @@ function Invoke-AndroidBuild {
             }
         }
     }
-    $tests = Get-PlayModeResult
-    if (-not $tests -or $tests.GetAttribute("result") -ne "Passed") {
-        throw "Run -Mode test successfully before building."
-    }
     $commit = "$(& git rev-parse HEAD)".Trim()
     if ($LASTEXITCODE -ne 0) { throw "Could not identify source commit." }
     $sourceChanges = @(& git status --porcelain -- Assets Packages ProjectSettings)
     if ($sourceChanges.Count -gt 0) {
         throw "Review and commit Unity source/import changes first. Do not discard local work. Then rerun."
     }
+    # Review R1: the build must use exactly the inputs and editor the recorded tests ran on.
+    $inputs = Get-UnityInputFingerprint $repoRoot
+    $tests = Assert-TestEvidence $evidencePath $logRoot $inputs $editorVersion $testPlatforms
 
-    # versionCode must increase per application ID; existing build folders are never overwritten.
+    # Review R4: versionCode must exceed every code known for this application ID,
+    # in the committed release register and in retained local build folders.
     $channelRoot = Join-Path $repoRoot "Builds\Android\$Channel"
-    $existing = @(Get-ChildItem -LiteralPath $channelRoot -Directory -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -match '^\d+$' } | ForEach-Object { [int]$_.Name })
-    if ($existing.Count -gt 0) {
-        $highest = ($existing | Measure-Object -Maximum).Maximum
-        if ($VersionCode -le $highest) { throw "versionCode $VersionCode is not above the highest existing $Channel build ($highest)." }
-    }
+    $highest = Get-HighestVersionCode $registerPath $applicationIds[$Channel] $channelRoot
+    if ($VersionCode -le $highest) { throw "versionCode $VersionCode is not above the highest known code for $($applicationIds[$Channel]) ($highest)." }
     $outDir = Join-Path $channelRoot $VersionCode
     New-Item -ItemType Directory -Path $outDir -Force | Out-Null
     $apk = Join-Path $outDir "OctopusS1-$Channel-$Version-$VersionCode.apk"
@@ -131,6 +134,10 @@ function Invoke-AndroidBuild {
             "-projectPath", $repoRoot, "-executeMethod", "OctopusS1Build.Android",
             "-octopusChannel", $Channel, "-octopusVersion", $Version,
             "-octopusVersionCode", "$VersionCode", "-octopusOutput", $apk, "-logFile", $log)
+        # Review R3: the build restores its own settings; any change to Unity inputs is a defect.
+        # Nothing is reverted here, so concurrent owner edits are never discarded.
+        $changed = @(Compare-UnityInputs $inputs (Get-UnityInputFingerprint $repoRoot))
+        if ($changed.Count -gt 0) { throw "Unity inputs changed during the build: $($changed -join ', '). The APK is not attributable; inspect git diff." }
         if (-not (Test-Path -LiteralPath $apk) -or (Get-Item -LiteralPath $apk).Length -eq 0) {
             throw "Unity did not produce an APK."
         }
@@ -144,34 +151,41 @@ function Invoke-AndroidBuild {
     } catch {
         Remove-Item -LiteralPath $outDir -Recurse -Force -ErrorAction SilentlyContinue
         throw
-    } finally {
-        # The tree was verified clean before the build, so this only drops build-time
-        # PlayerSettings (channel identity, host keystore path) that Unity wrote back.
-        & git restore -- ProjectSettings/ProjectSettings.asset
     }
     $digest = (Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLowerInvariant()
     "$digest  $(Split-Path $apk -Leaf)" | Set-Content -LiteralPath "$apk.sha256" -Encoding ASCII
-    [ordered]@{
+    # Keep the exact test evidence next to the APK.
+    Copy-Item -LiteralPath $evidencePath -Destination (Join-Path $outDir "test-evidence.json")
+    foreach ($t in $tests) { Copy-Item -LiteralPath (Join-Path $logRoot $t.Xml) -Destination (Join-Path $outDir $t.Xml) }
+    $manifest = [ordered]@{
         channel = $Channel
         applicationId = $facts.applicationId
         label = $facts.label
         version = $facts.versionName
         versionCode = $facts.versionCode
         commit = $commit
-        unity = $expectedVersion
+        unity = $editorVersion
+        unityInputsFingerprint = $inputs.Fingerprint
         sha256 = $digest
+        sizeBytes = (Get-Item -LiteralPath $apk).Length
         debuggable = $facts.debuggable
         nativeCode = $facts.nativeCode
         signerDn = $facts.signerDn
         signerSha256 = $facts.signerSha256
         signingPolicy = if ($Channel -eq "Dev") { "build host Android debug key (Dev test policy)" } else { "owner Live keystore" }
-        playModeTests = "$($tests.GetAttribute('passed'))/$($tests.GetAttribute('total')) passed"
+        tests = @($tests | ForEach-Object { "$($_.Platform) $($_.Passed)/$($_.Total) passed, $($_.Skipped) skipped, xml sha256 $($_.XmlSha256)" })
         deviceTested = $false
         builtUtc = (Get-Date).ToUniversalTime().ToString("o")
-    } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outDir "build.json") -Encoding UTF8
+    }
+    $manifest | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outDir "build.json") -Encoding UTF8
+    Add-ReleaseRecord $registerPath ([ordered]@{
+        channel = $Channel; applicationId = $facts.applicationId; version = $facts.versionName
+        versionCode = $facts.versionCode; commit = $commit; sha256 = $digest; signerSha256 = $facts.signerSha256
+        builtOn = "owner Windows PC"; status = "built; not yet distributed" })
     Write-Output "APK: $apk"
     Write-Output "SHA-256: $digest"
     Write-Output "Signer SHA-256: $($facts.signerSha256)"
+    Write-Output "Release register updated: commit releases/release-register.json."
 }
 switch ($Mode) {
     "doctor" {
