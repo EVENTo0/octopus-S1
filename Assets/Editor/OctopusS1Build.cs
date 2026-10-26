@@ -7,7 +7,8 @@ using UnityEngine;
 
 public static class OctopusS1Build
 {
-    public static void Android()
+    // Used by both the local batch build and the cloud pre-export hook.
+    public static void PrepareAndroid()
     {
         if (Application.unityVersion != "6000.3.25f1")
             throw new InvalidOperationException("Expected Unity 6000.3.25f1");
@@ -24,6 +25,11 @@ public static class OctopusS1Build
         PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
         PlayerSettings.Android.useCustomKeystore = false;
         EditorUserBuildSettings.buildAppBundle = false;
+    }
+
+    public static void Android()
+    {
+        PrepareAndroid();
         Directory.CreateDirectory("Builds/Android");
         var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
             scenes = new[] { "Assets/Scenes/OctopusS1Prototype.unity" },
