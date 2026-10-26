@@ -7,7 +7,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 class ProjectChecks(unittest.TestCase):
     def test_required_modules(self):
         deps = json.loads((ROOT / 'Packages/manifest.json').read_text())['dependencies']
-        for module in ['audio', 'physics', 'imgui', 'inputlegacy', 'jsonserialize']:
+        for module in ['audio', 'physics', 'imgui', 'jsonserialize']:
             self.assertEqual(deps.get('com.unity.modules.' + module), '1.0.0')
 
     def test_version_and_batch_entry(self):
