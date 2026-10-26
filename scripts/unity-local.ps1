@@ -8,7 +8,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path $PSScriptRoot -Parent
 Set-Location $repoRoot
-$expectedVersion = "6000.3.25f1"
+$expectedVersion = "6000.6.4f1"
 if (-not $UnityEditor) {
     $UnityEditor = Join-Path $env:ProgramFiles "Unity\Hub\Editor\$expectedVersion\Editor\Unity.exe"
 }

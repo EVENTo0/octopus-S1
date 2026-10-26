@@ -7,7 +7,7 @@ jobs:
   build:
     # Provision ONLY an existing, isolated licensed host. No PR/push triggers.
     environment: unity-build
-    runs-on: [self-hosted, unity-6000.3.25f1-android]
+    runs-on: [self-hosted, unity-6000.6.4f1-android]
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-: "${UNITY_EDITOR:?Set UNITY_EDITOR to the licensed Unity 6000.3.25f1 executable}"
+: "${UNITY_EDITOR:?Set UNITY_EDITOR to the licensed Unity 6000.6.4f1 executable}"
 [[ -x "$UNITY_EDITOR" ]] || { echo 'UNITY_EDITOR is not executable' >&2; exit 2; }
 mkdir -p Logs Builds/Android
 case "${1:-build}" in

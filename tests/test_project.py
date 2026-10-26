@@ -11,7 +11,7 @@ class ProjectChecks(unittest.TestCase):
             self.assertEqual(deps.get('com.unity.modules.' + module), '1.0.0')
 
     def test_version_and_batch_entry(self):
-        self.assertIn('6000.3.25f1', (ROOT / 'ProjectSettings/ProjectVersion.txt').read_text())
+        self.assertIn('6000.6.4f1', (ROOT / 'ProjectSettings/ProjectVersion.txt').read_text())
         source = (ROOT / 'Assets/Editor/OctopusS1Build.cs').read_text()
         self.assertIn('public static void Android()', source)
         self.assertIn('BuildResult.Succeeded', source)

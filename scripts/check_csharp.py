@@ -14,8 +14,8 @@ compiler = data / 'DotNetSdkRoslyn/csc.dll'
 if not dotnet.is_file() or not compiler.is_file():
     parser.error('Expected an extracted Linux Unity Editor with bundled .NET and Roslyn')
 version = subprocess.check_output([str(editor / 'Unity'), '-version'], text=True).strip()
-if version != '6000.3.25f1':
-    parser.error('Expected Unity 6000.3.25f1; found ' + version)
+if version != '6000.6.4f1':
+    parser.error('Expected Unity 6000.6.4f1; found ' + version)
 
 root = Path(__file__).resolve().parents[1]
 output = args.output.resolve()

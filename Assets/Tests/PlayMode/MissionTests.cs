@@ -49,13 +49,9 @@ public class MissionTests
     [UnityTearDown]
     public IEnumerator Cleanup()
     {
-        // The blockout creates root objects at runtime; isolate every test.
-        var empty = SceneManager.CreateScene("Cleanup");
-        SceneManager.SetActiveScene(empty);
-        for (int i = SceneManager.sceneCount - 1; i >= 0; i--)
-        {
-            var scene = SceneManager.GetSceneAt(i);
-            if (scene != empty) yield return SceneManager.UnloadSceneAsync(scene);
-        }
+        // The blockout creates root objects in the test's own scene. Unload only that scene:
+        // the runner's InitTestScene hosts the test controller and must stay loaded.
+        var scene = SceneManager.GetSceneByName("MissionTest");
+        if (scene.IsValid() && scene.isLoaded) yield return SceneManager.UnloadSceneAsync(scene);
     }
 }

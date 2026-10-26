@@ -10,8 +10,8 @@ public static class OctopusS1Build
     // Used by both the local batch build and the cloud pre-export hook.
     public static void PrepareAndroid()
     {
-        if (Application.unityVersion != "6000.3.25f1")
-            throw new InvalidOperationException("Expected Unity 6000.3.25f1");
+        if (Application.unityVersion != "6000.6.4f1")
+            throw new InvalidOperationException("Expected Unity 6000.6.4f1");
         if (!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android, BuildTarget.Android))
             throw new InvalidOperationException("Install Android Build Support with SDK, NDK and OpenJDK.");
         if (!EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android))
