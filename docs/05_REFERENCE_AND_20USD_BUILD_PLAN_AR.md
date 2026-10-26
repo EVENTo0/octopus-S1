@@ -56,3 +56,14 @@
 فتحت صفحة Build Automation الخاصة بالمشروع على Free tier، دون ترقية أو اشتراك جديد. فشل حفظ رابط HTTPS للمستودع برسالة الخدمة «Your repository is either private or inaccessible»؛ يؤكد GitHub أن visibility=public. لا نعرف سبب فشل وصول Unity، ولا نستنتج أن المستودع خاص.
 
 مسار GitHub المدمج يعرض Personal Access Token. البديل المجهز هو Git عبر SSH بعنوان `git@github.com:EVENTo0/octopus-S1.git` ومفتاح عام أنشأته Unity للمؤسسة. لم يضف المفتاح إلى GitHub ولم يحفظ ربط SSH ولم ينشأ هدف بناء أو يبدأ استهلاك دقائق. يلزم موافقة المالك على إضافة Deploy Key باسم `Unity Build Automation - Octopus S1 (read-only)` إلى هذا المستودع وحده، دون Allow write access. المفتاح الخاص يبقى لدى Unity. بعد الموافقة نضيف المفتاح العام ونحفظ الربط ثم نحدد الفرع والإصدار وAndroid/ARM64 وpre-export وتوقيت التشغيل اليدوي.
+
+### نتيجة محاولة Deploy Key بعد موافقة المالك وتحقق GitHub Mobile
+- وافق المالك على مفتاح Unity بصلاحية قراءة فقط. نجح تأكيد هوية GitHub Mobile.
+- رفض GitHub إضافة المفتاح برسالة: "Key is too short. GitHub recommends using ssh-keygen to generate a RSA key of at least 3072 bits."
+- صفحة المستودع تؤكد أنه لا توجد Deploy Keys؛ لم تمنح Unity صلاحية قراءة بهذه المحاولة.
+- جرب حفظ عنوان SSH للمستودع العام وفق مسار Unity الرسمي؛ عادت رسالة private or inaccessible ولم يحفظ الاتصال.
+- لم نبدل مفتاح المؤسسة أو نُعد توليده، ولم نغير إعدادات مشاريع أخرى.
+- المسار البديل المقترح: Fine-grained PAT باسم Octopus S1 Unity Build - temporary، إلى مستودع EVENTo0/octopus-S1 وحده، Contents: Read-only مع Metadata الضمني، دون صلاحيات حساب أو Webhooks. انتهاء في اليوم التالي وإلغاء بعد محاولة البناء/التوقف، ونقله إلى خانة الاعتماد في Unity فقط دون Git أو السجلات أو الدردشة.
+- رفضت المراجعة الآلية حتى فتح صفحة تجهيز PAT لأنه اعتماد مختلف عن Deploy Key الذي وافق عليه المالك؛ يلزم تفويض صريح لهذا المسار قبل إنشائه أو نقله إلى Unity.
+- لا target أو build أو APK حتى الآن؛ لا استئجار أو اشتراك جديد أو استهلاك دقائق بناء مثبت.
+- يدعم دليل Unity الرسمي Fine-grained Contents: Read-only، ولا يطلب Webhooks إلا عند تفعيل البناء التلقائي: https://docs.unity.com/en-us/build-automation/get-started-with-build-automation/connect-your-version-control-system
