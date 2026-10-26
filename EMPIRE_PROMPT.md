@@ -32,7 +32,9 @@ and assets, and the separate previous Claude project, must remain separate.
 5. Inspect scripts, scene generation, package manifest, lockfile, project settings and
    actual logs before changing implementation. Record findings in the worklog.
 
-Use Unity **6000.3.25f1** with its matching Android Build Support, SDK, NDK and OpenJDK.
+Use Unity **6000.6.4f1** with its matching Android Build Support, SDK, NDK and OpenJDK.
+The owner-selected installed version and successful local import are recorded in cycle 1.
+6000.3.25f1 documents describe an earlier stage; do not downgrade the working host to follow them.
 The Windows host is preferred. The owner confirms that Codex or Claude Code can run there.
 This ChatGPT cloud session does not automatically control that host.
 
@@ -63,7 +65,8 @@ This ChatGPT cloud session does not automatically control that host.
 ## Two installations, one codebase
 
 Implement the contract in `docs/09_DEV_LIVE_RELEASES_AR.md`.
-It is a **target specification**: current prototype build scripts are not yet two-channel builders.
+Channel-aware build code now exists. The local cycle-1 report records a Dev APK only;
+LiveCandidate signing/build and side-by-side device behavior still require verification.
 
 | Property | Dev / تجريبية | Live / معتمدة |
 |---|---|---|
@@ -143,8 +146,9 @@ in a reference board. Keep original-art improvements incremental and mark placeh
 - Live signing must remain reproducible across machines. A host-specific debug keystore
   is not an acceptable long-term Live signing plan. Let the owner retain the private key
   and backup; store only the public certificate fingerprint and non-secret policy in Git.
-- The existing `-Mode build` command builds one debug prototype. Do not call that output
-  a two-channel release until the implementation and artifact inspections prove it.
+- The current Windows `-Mode build` command requires explicit channel/version/versionCode.
+  Read its actual parameters and the worklog; do not apply obsolete single-prototype commands.
+  A Dev build alone does not verify a Live release or side-by-side installation.
 - The current prototype uses the intended Live application ID with debug signing. If it is
   already installed, diagnose that signing transition explicitly; do not uninstall it or wipe
   its data without the owner choosing a migration/removal plan.
