@@ -9,6 +9,20 @@ public sealed class OctopusS1Prototype : MonoBehaviour
 {
     private enum GameState { Menu, Help, Settings, Playing, Paused, Result }
 
+    /// <summary>A touch or mouse sample in screen pixels (origin bottom left), as reported by Input.</summary>
+    public struct PointerSample
+    {
+        public int finger;
+        public Vector2 position;
+        public TouchPhase phase;
+        public PointerSample(int finger, Vector2 position, TouchPhase phase)
+        {
+            this.finger = finger;
+            this.position = position;
+            this.phase = phase;
+        }
+    }
+
     private const float WalkSpeed = 4.4f;
     private const float WorldHalfSize = 24f;
     private const int NoFinger = int.MinValue;
@@ -34,6 +48,8 @@ public sealed class OctopusS1Prototype : MonoBehaviour
     private Vector2 touchMoveInput;
     private bool interactRequested;
     private bool scanRequested;
+    // When set (tests only), pointer samples come from this list instead of Input; it is drained each frame.
+    private List<PointerSample> injectedPointers;
 
     private GameState state = GameState.Menu;
     private GameState settingsReturnState = GameState.Menu;
@@ -89,18 +105,30 @@ public sealed class OctopusS1Prototype : MonoBehaviour
     {
         if (player == null) return;
         if (Input.GetKeyDown(KeyCode.Escape)) HandleBack();
-        if (state != GameState.Playing) return;
+        Step(Time.deltaTime);
+    }
 
-        missionTime += Time.deltaTime;
-        ReadKeyboard();
+    private void Step(float deltaTime)
+    {
+        if (state != GameState.Playing) return;
+        Simulate(deltaTime);
+    }
+
+    // One gameplay frame. Tests drive this directly with injected pointer samples.
+    private void Simulate(float deltaTime)
+    {
+        // Touches first, so movement uses this frame's joystick; a Pause touch ends the frame here.
         ReadPointers();
+        if (state != GameState.Playing) return;
+        ReadKeyboard();
+        missionTime += deltaTime;
 
         var direction = Quaternion.Euler(0f, cameraYaw, 0f) * new Vector3(moveInput.x, 0f, moveInput.y);
         if (direction.sqrMagnitude > 1f) direction.Normalize();
-        player.Move(direction * WalkSpeed * Time.deltaTime);
-        player.Move(Vector3.down * 9.81f * Time.deltaTime);
+        player.Move(direction * WalkSpeed * deltaTime);
+        player.Move(Vector3.down * 9.81f * deltaTime);
         if (direction.sqrMagnitude > 0.01f)
-            playerRoot.rotation = Quaternion.Slerp(playerRoot.rotation, Quaternion.LookRotation(direction), Time.deltaTime * 10f);
+            playerRoot.rotation = Quaternion.Slerp(playerRoot.rotation, Quaternion.LookRotation(direction), deltaTime * 10f);
 
         UpdateCamera();
         UpdateCompanion();
@@ -197,9 +225,18 @@ public sealed class OctopusS1Prototype : MonoBehaviour
 
     private void ReadPointers()
     {
+        if (injectedPointers != null)
+        {
+            var samples = injectedPointers.ToArray();
+            injectedPointers.Clear();
+            // Touches after a Pause in the same frame are ignored.
+            for (var i = 0; i < samples.Length && state == GameState.Playing; i++)
+                HandlePointer(samples[i].finger, samples[i].position, samples[i].phase);
+            return;
+        }
         if (Input.touchCount > 0)
         {
-            for (var i = 0; i < Input.touchCount; i++)
+            for (var i = 0; i < Input.touchCount && state == GameState.Playing; i++)
             {
                 var touch = Input.GetTouch(i);
                 HandlePointer(touch.fingerId, touch.position, touch.phase);
