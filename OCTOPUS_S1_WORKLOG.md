@@ -124,62 +124,72 @@ pending until the exact candidate is tested and the owner accepts its version/fi
 
 ## CLAUDE CODE / LOCAL CODEX — Execution result
 
-**Order/Revision executed:** OS1-LOCAL-001 / Revision 1 — cycle 1 (in progress, slice 1–6 partially done)  
-**Agent/session and UTC:** Claude Code (local, owner's Windows 11 PC), 2026-10-26 ~18:00–19:40 UTC  
-**Windows project path:** `C:\Users\octa1\Desktop\projects octa\saeed game battle royal\octopus S1`
-(fresh clone of the branch; separate from the owner's other projects in the parent folder)  
-**Branch + code SHA:** `codex/octopus-s1-charter-and-prototype`; Dev APK source `bf8d6ec`;
-build-tool fix `7583b41` (no gameplay change). Remote order commit `581e1db` merged (`487e0b2`), no conflicts.  
-**Working tree / remote synchronization:** clean before each build; pushed to origin (no force-push, no PR merge).  
-**Host/editor/modules/license:** **Unity 6000.6.4f1** (`12bfff696524`) — owner decision in chat:
-use the already installed and licensed editor instead of 6000.3.25f1 (not installed; its install
-needed UAC + module EULAs). This supersedes the 6000.3.25f1 pin in AGENTS/EMPIRE for this host.
-Android Build Support, SDK (build-tools 36.0.0, platform 36), NDK, OpenJDK present (accepted earlier in Hub
-by the owner). Unity Personal license active, signed in as the owner. `doctor` passed.  
-**Changed behavior / files:**
-- Version pin → 6000.6.4f1 (ProjectVersion, build guard, scripts, workflow label).
-- `MissionTests` teardown hang fixed: it unloaded the runner's InitTestScene, so the run never wrote results.
-- First import generated ProjectSettings + `packages-lock.json` (test-framework 1.8.0); reviewed and committed.
-  `activeInputHandler: 0` (legacy Input), matching the prototype.
-- `OctopusS1Prototype.cs` extended (not rewritten): Menu/Help/Settings/Pause/Result states; Android back;
-  multi-touch left joystick + right camera drag + Interact/Scan/Pause buttons in the safe area;
-  rejection feedback; fixed double-count of a cell in one frame; companion without colliders;
-  invisible boundary + out-of-bounds recovery + "return to start"; pause on background/focus loss;
-  restart rebuilds a fresh world; procedural tones; AR/EN text.
-- New: `OctopusS1SaveData.cs` (schema 1 JSON in PlayerPrefs, corrupt/unknown → reset, bad values repaired),
-  `ArabicText.cs` (Arabic presentation-form shaping + RTL line ordering for IMGUI), `OctopusS1Text.cs`.
-- Channels: `OctopusS1Build.Android` requires `-octopusChannel Dev|LiveCandidate`, `-octopusVersion`,
-  `-octopusVersionCode`, `-octopusOutput`; identity applied after scene generation; Live refuses debug
-  signing (keystore only from `OCTOPUS_LIVE_*` env vars). Cloud hook reads `OCTOPUS_*` env vars, no BuildPlayer.
-  `unity-local.ps1 -Channel/-Version/-VersionCode` writes `Builds/Android/<Channel>/<versionCode>/`,
-  refuses non-increasing versionCode, verifies the APK with aapt2 + apksigner, writes `build.json` + `.sha256`.
-  `scripts/new-live-keystore.ps1`: owner-run keytool helper, keystore kept outside the repo.  
+**Order/Revision executed:** OS1-LOCAL-002 / Revision 1 — cycle 2 (steps 1–7 local part done; 7 remote, 8, 9 blocked on owner actions)  
+**Agent/session and UTC:** Claude Code (local, owner's Windows 11 PC), 2026-10-26 ~19:55–20:30 UTC (owner clock 2026-10-27)  
+**Previous report:** cycle 1 archived in [docs/reports/CYCLE_1_EXECUTION.md](docs/reports/CYCLE_1_EXECUTION.md).  
+**Windows project path:** `C:\Users\octa1\Desktop\projects octa\saeed game battle royal\octopus S1`  
+**Branch + code SHA:** `codex/octopus-s1-charter-and-prototype`. Order commit `af2497e` fast-forwarded (tree was clean;
+nothing to save). WIP checkpoint `868e958` (pushed before an owner app update). **Dev 0.1.1 source: `9d4a1ce065834cfc73dfa153b60d007249838dda`.**  
+**Working tree / synchronization:** one Unity process at a time; Unity inputs clean before and after the build; pushed; no force-push/PR merge.  
+**Host/editor:** Unity 6000.6.4f1 (`12bfff696524`), owner-selected (now reflected in the active order). Android SDK/NDK/OpenJDK unchanged.
+No Unity reinstall. A stuck `winget install GitHub.cli` from cycle 1 (waiting on UAC) was stopped, not retried.  
+
+**R2 — Pause/input (P1): fixed, reproduced first.**
+- Added a test path that runs the real per-frame code (`Update → Step(dt) → Simulate(dt)`) with injected touch samples.
+- Reproduction on the unfixed logic (run 2 of the cycle): a cell **was collected in the frame Pause was touched** (expected 0, got 1)
+  and **touch movement lagged one frame** (z stayed −9.0). A third case first passed for a test reason
+  (teleporting via `transform` is undone by `CharacterController.Move`); the tests now teleport correctly.
+- Fix: touches are read before movement; when a touch leaves Playing, the frame ends and later touches in it are ignored.
+- **New defect found by these tests and fixed:** after start/restart while `timeScale` was 0, physics had not synced the new
+  colliders, so the first `Move` could fall through the ground (0.981 m = one frame of gravity). `Physics.SyncTransforms()` after
+  world build and teleports. Regression test added.
+
+**R1 — test provenance (P1): fixed.** `-Mode test` runs EditMode then PlayMode and writes `Logs/test-evidence.json`:
+content fingerprint of every tracked/untracked-non-ignored file under Assets/, Packages/, ProjectSettings/ (no timestamps;
+docs/scripts outside the domain), exact editor version, per-platform counts and XML SHA-256. Inputs must not change during tests.
+`-Mode build` recomputes the fingerprint and rejects missing/empty/failing/zero-test XML, tampered XML, a different editor or a
+different source; it fails if inputs change during the build. Logic lives in `scripts/OctopusS1.Release.psm1`.
+
+**R3 — build/signing state (P1, before LiveCandidate): fixed.** `OctopusS1BuildState` snapshots and restores, on success and
+failure: application ID, product name, version/versionCode, `useCustomKeystore`, **raw keystore name/alias** (public setter writes
+`{inproject}: ` for ""), in-memory passwords, minSdk, backend, architectures, orientation, development/allowDebugging/
+connectProfiler/deep-profiling/app-bundle flags, scene list. The runner **no longer runs `git restore`** (could discard owner edits).
+Build scripts moved to editor asmdef `OctopusS1.Editor` so EditMode tests can call them (entry names unchanged).
+Real-build check: Dev 0.1.1 build left Unity inputs byte-identical (gate passed; `git status` clean for Assets/Packages/ProjectSettings).
+
+**R4 — consistency (P2): done.** `Packages/manifest.json` now declares `com.unity.test-framework` **1.8.0**: on 6000.6.4f1 it is a
+built-in (core) package and the lock already resolved `builtin 1.8.0`; the old 1.4.6 declaration was not what ran. Import/tests
+pass with 1.8.0. `inputlegacy` not re-added. Committed `releases/release-register.json` (append-only) feeds the versionCode check
+together with retained build folders; it records the superseded prototype (`com.evento.octopuss1`, code 1, debug-signed),
+so **the first LiveCandidate must use versionCode ≥ 2**. Full signer fingerprints are in build.json and the register.
+
 **Commands actually run + exit codes:**
-`unity-local.ps1 -Mode doctor` 0 · `-Mode test` 1st run hung (killed, root cause above) then 0 ·
-prototype `-Mode build` 0 · `-Mode test` (7 tests) 0 · `-Mode build -Channel Dev -Version 0.1.0 -VersionCode 1` 0 ·
-`-Channel LiveCandidate` without keystore → refused (expected) · Dev versionCode 1 again → refused (expected).  
-**Unity import + package resolution:** succeeded on 6000.6.4f1; no compiler errors or warnings in `Logs/tests.log`.  
-**Tests + counts + XML evidence:** PlayMode 7/7 passed, 0 skipped (`Logs/playmode.xml`, local, not committed):
-MissionRequiresCellsRelayAndExtraction, CellCountsOnceEvenWhenCheckedTwiceInOneFrame,
-RestartGivesAFreshMissionAfterSuccess, FallingOutOfTheWorldReturnsToStart, TouchJoystickAndButtons,
-SaveDataRecoversFromCorruptionAndBadValues, ArabicIsShapedAndOrderedForDisplay.
-Python setup tests not run: Python is not installed on this host.  
-**Dev artifact + SHA-256:** `Builds/Android/Dev/1/OctopusS1-Dev-0.1.0-1.apk` (23,556,696 bytes) —
-SHA-256 `82df86f49a3d5500fe7aa091a1c9216a58f6818e29cd821b433b9e2ced92e84b`.
-aapt2/apksigner: `com.evento.octopuss1.dev`, label "Octopus S1 Dev", 0.1.0 (1), minSdk 26, targetSdk 36,
-debuggable, `arm64-v8a`, signer "CN=Android Debug" SHA-256 `f3e9dc66…52676bd7` (this host's debug key = Dev test policy).
-Earlier single-channel prototype APK (`f3f045a`, id `com.evento.octopuss1`, debug-signed,
-SHA-256 `1e5724b1…7f84b8b5`) is superseded and must not be distributed as Live.  
-**Live candidate + SHA-256:** not produced — blocked on the owner's Live keystore (by design).  
-**Device results:** not run — `adb devices` shows no connected device. G3 open. Arabic glyph rendering
-(system-font fallback for presentation forms) and touch feel are unverified on a phone.  
-**Observed charges/quota:** none incurred by this cycle (local hardware only, no Cloud build started);
-the account's total Cloud charges from earlier attempts were not inspected — unknown, not zero.  
-**Blocker / required owner action:**
-1. GitHub Draft Release: GitHub CLI install is waiting for a Windows admin (UAC) prompt; then `gh auth login` by the owner.
-2. LiveCandidate: owner runs `scripts/new-live-keystore.ps1` and keeps the key + backup offline.
-3. G3: connect an authorized Android ARM64 phone with USB debugging (owner accepts the prompt).  
-**Recommended next action:** install Dev APK on the owner's phone and run the device checklist; then LiveCandidate.  
+`tests/release-gates.Tests.ps1` → 12/12 checks, exit 0 ·
+`-Mode test` runs: (a) pre-fix R2 reproduction, exit 1 (3 expected failures) · (b) after fix, exit 1 (ground fall-through found) ·
+(c) EditMode 4/5 (test compared a path with `\` vs Unity's `/`; test corrected) · (d) runner bug (`$null.Count` under strict mode; fixed) ·
+(e) **final: EditMode 5/5, PlayMode 11/11, 0 skipped, exit 0** ·
+`-Mode build -Channel Dev -Version 0.1.1 -VersionCode 2` → exit 0.  
+**Unity import + package resolution:** OK on 6000.6.4f1 after the manifest change; no compile errors.  
+**Tests + evidence (bound to source):** inputs fingerprint `2d54336481d46e689d973a5b7bb506355654e518329f08f7c7d160d80c5a857c` (62 files),
+Unity `6000.6.4f1_12bfff696524`. EditMode 5/5 (`editmode.xml` sha256 `ea68eb64…6956df7b`): Dev settings restore, Live keystore/flags
+restore, restore after failure, Live without key refused, unknown channel rejected. PlayMode 11/11 (`playmode.xml` sha256 `844dca0c…fac1a11`):
+the 7 cycle-1 tests + pause-frame collection, interact around pause, joystick same-frame/held-through-pause/cancel, ground after start/restart.
+Copies retained beside the APK. Python setup tests: not run (no Python on this host).  
+**Dev artifact:** `Builds/Android/Dev/2/OctopusS1-Dev-0.1.1-2.apk`, 23,567,792 bytes, SHA-256
+`f001031cd7563be7351d91bd9aff63e65da29802df1e756083d849920283790d` (re-hashed after build). aapt2/apksigner:
+`com.evento.octopuss1.dev`, "Octopus S1 Dev", 0.1.1 (2), debuggable, `arm64-v8a`, signer CN=Android Debug SHA-256
+`f3e9dc669f9264b6df366eb721a3697b4c21981c577162a423aaa1af52676bd7`. Dev 0.1.0 (1) retained unchanged (re-hashed `82df86f4…ed92e84b`).  
+**GitHub Draft Release:** not created. No GitHub CLI or other release-capable session on this host; `scripts/new-draft-release.ps1`
+is ready (verifies the hash, uploads APK + checksum + build.json + test evidence/XML as a **draft**; never publishes).  
+**Live candidate:** not built — no owner Live keystore on this host (`%USERPROFILE%\.octopus-s1` absent). Next code must be ≥ 2.  
+**Device results:** not run — `adb devices` empty at start and end of the cycle. G3 open; Arabic glyph rendering, touch feel,
+camera near rocks, repeated-restart resource growth and performance remain unmeasured.  
+**Observed charges/quota:** none by this cycle (local only, no Cloud). Prior account-wide Cloud charges: unknown, not zero.  
+**Blocker / required owner action (one per gate):**
+1. Draft Release: allow the official portable GitHub CLI (or install it) and run `gh auth login` locally; then `scripts/new-draft-release.ps1 -Channel Dev -VersionCode 2`.
+2. Device: connect an authorized Android ARM64 phone with USB debugging and accept the prompt.
+3. LiveCandidate: run `scripts/new-live-keystore.ps1` and keep the key + an offline backup.  
+**Recommended next action:** device run of Dev 0.1.1 (install, mission, AR/EN, pause/background, second run, logcat, FPS).  
 **Handoff commit:** recorded in the cycle history after push.
 
 Replace the result fields with real results; keep older cycle summaries in the log below.
@@ -210,8 +220,9 @@ ChatGPT message after each successful step; Live acceptance remains the owner's 
 
 | Channel / version | Source SHA | APK SHA-256 / link | Device evidence | Owner acceptance |
 |---|---|---|---|---|
-| Dev 0.1.0 (1) `com.evento.octopuss1.dev` | `bf8d6ecfaacdaa4822a812b57335a07bfd4d98df` | `82df86f49a3d5500fe7aa091a1c9216a58f6818e29cd821b433b9e2ced92e84b` — owner PC `Builds/Android/Dev/1/`; Draft Release pending | Not tested on device | Not required to iterate |
-| Live candidate | — | Not produced (needs owner Live keystore) | Not tested | Pending |
+| Dev 0.1.0 (1) `com.evento.octopuss1.dev` | `bf8d6ecfaacdaa4822a812b57335a07bfd4d98df` | `82df86f49a3d5500fe7aa091a1c9216a58f6818e29cd821b433b9e2ced92e84b` — owner PC `Builds/Android/Dev/1/` (retained, superseded by 0.1.1) | Not tested on device | Not required to iterate |
+| Dev 0.1.1 (2) `com.evento.octopuss1.dev` | `9d4a1ce065834cfc73dfa153b60d007249838dda` | `f001031cd7563be7351d91bd9aff63e65da29802df1e756083d849920283790d` — owner PC `Builds/Android/Dev/2/` with build.json + test evidence; Draft Release blocked (no GitHub CLI session) | Not tested on device | Not required to iterate |
+| Live candidate | — | Not produced (needs owner Live keystore; versionCode ≥ 2 because the prototype used code 1) | Not tested | Pending |
 | Approved Live | — | No release | None | None |
 
 Do not replace an accepted row in place. Append each version, its immutable artifact and source.
@@ -230,3 +241,7 @@ Keep build/source SHA separate from a later documentation/report commit.
   Source review + two Python setup tests only; local APK/XML not independently retrieved.
   Recorded Dev progress; required input/test-provenance/signing-state fixes, new owner-first
   Dev delivery and Android validation. No Live accepted or artifact overwritten.
+- 2026-10-27 — Cycle 2 (Claude Code, Windows) for OS1-LOCAL-002/1: R2 reproduced then fixed, plus a newly found
+  ground fall-through after restart; R1 source-bound test evidence; R3 full build-state snapshot/restore (no git restore);
+  R4 test-framework 1.8.0 + committed release register. EditMode 5/5, PlayMode 11/11, release-gate script 12/12.
+  Dev 0.1.1 (2) built from `9d4a1ce`. No Draft Release (no GitHub CLI session), no device, no Live key. Cycle-1 report archived.
