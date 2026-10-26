@@ -67,3 +67,16 @@
 - رفضت المراجعة الآلية حتى فتح صفحة تجهيز PAT لأنه اعتماد مختلف عن Deploy Key الذي وافق عليه المالك؛ يلزم تفويض صريح لهذا المسار قبل إنشائه أو نقله إلى Unity.
 - لا target أو build أو APK حتى الآن؛ لا استئجار أو اشتراك جديد أو استهلاك دقائق بناء مثبت.
 - يدعم دليل Unity الرسمي Fine-grained Contents: Read-only، ولا يطلب Webhooks إلا عند تفعيل البناء التلقائي: https://docs.unity.com/en-us/build-automation/get-started-with-build-automation/connect-your-version-control-system
+
+### اعتماد أسبوعي وربط ناجح وأول محاولة بناء — 26 أكتوبر 2026
+وافق المالك على PAT ثم عدّل مدة صلاحيته إلى أسبوع. أُنشئ باسم Octopus S1 Unity Build - temporary، بانتهاء ظاهر 2 نوفمبر 2026، مع Only select repositories: EVENTo0/octopus-S1، وصلاحيتي Contents: Read-only وMetadata: Read-only الضمنية، وAccount: 0. نُقل عبر زر نسخ وحافظة المتصفح مباشرة إلى Unity دون قراءة قيمته أو طباعتها، ثم أُفرغت الحافظة وأُزيلت صفحة عرض الرمز. خطة التنظيف: إلغاؤه بعد محاولة البناء.
+
+نجح تفويض Unity وحفظ مصدر GitHub للمستودع المحدد. أُنشئ هدف `octopus-s1-android-prototype`:
+- Unity 6000.3.25f1، Windows 11 24H2، Windows Micro (8vCPU/16GB/512GB، Free tier eligible، السعر المعروض خارج الحصة 0.02 USD/min).
+- فرع codex/octopus-s1-charter-and-prototype، جذر المستودع، Bundle ID com.evento.octopuss1، Auto-generated debug keystore.
+- Development build، APK (AAB معطل)، pre-export OctopusS1CloudBuild.PreExport.
+- PlayMode tests مفعّلة وFail build if tests fail مفعّل؛ EditMode غير مفعّل لعدم وجود اختبارات لهذه الفئة.
+- Auto-build = No، Repeating schedule = No.
+
+بدأت محاولة #1 بمحدد commit `5aa90efb344b8cc71adaa89460bf9c9d9e96f2`. الحالة المرصودة الأولى Sent to Builder، وليست نجاح بناء. رابط الدليل:
+https://cloud.unity.com/organizations/18968384131673/projects/4d590d0e-8fec-4bbf-a505-019bb9b1d483/cloud-build/buildtargets/octopus-s1-android-prototype/builds/1
