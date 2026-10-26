@@ -1,0 +1,27 @@
+name: Manual Android prototype
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    # Provision ONLY an existing, isolated licensed host. No PR/push triggers.
+    environment: unity-build
+    runs-on: [self-hosted, unity-6000.3.25f1-android]
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          clean: true
+      - run: python3 -m unittest discover -s tests -v
+      - run: scripts/unity-build.sh test
+      - run: scripts/unity-build.sh build
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: octopus-s1-${{ github.sha }}
+          path: |
+            Logs/
+            Builds/Android/
+          retention-days: 7
