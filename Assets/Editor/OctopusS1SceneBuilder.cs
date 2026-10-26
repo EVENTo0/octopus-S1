@@ -20,7 +20,7 @@ public static class OctopusS1SceneBuilder
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
         PlayerSettings.companyName = "EVENTO";
         PlayerSettings.productName = "Octopus S1";
-        PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.evento.octopuss1");
+        PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, "com.evento.octopuss1");
         var shader = Shader.Find("Standard");
         if (shader == null) throw new System.InvalidOperationException("Standard shader missing.");
         Directory.CreateDirectory("Assets/Resources");
