@@ -96,3 +96,9 @@ https://unity.com/legal/terms-of-service/software
 ## تحديث التفويض ومسار Cloud
 
 اعتمد المالك في 26 أكتوبر 2026 سقف 20 USD إجماليًا للمرحلة وأعاد إرفاق 9045.png. راجع [خطة المرجع والميزانية](05_REFERENCE_AND_20USD_BUILD_PLAN_AR.md). أضيف hook `OctopusS1CloudBuild.PreExport` لتوليد المشهد قبل تصدير UBA؛ يشترك مع البناء المحلي في `OctopusS1Build.PrepareAndroid`. لا يستدعي hook بناءً متداخلًا. يبقى استيراد Unity واختبار PlayMode والبناء والجهاز غير منفذة.
+
+## حاسب Windows المحلي
+
+يتوفر الآن سكربت PowerShell للفحص والاختبارات والبناء دون Bash أو Python.
+راجع [تعليمات التسليم للوكيل المحلي](08_WINDOWS_LOCAL_HANDOFF_AR.md)
+واستخدم scripts/unity-local.ps1. لم يُختبر التشغيل على Windows بعد.
