@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c1c22">
+  <meta name="description" content="Octopus S1 — لعبة استكشاف وإنقاذ صحراوية مستقلة من EVENTO.">
+  <title>Octopus S1 | أخطبوط S1</title>
+  <link rel="stylesheet" href="site.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="Octopus S1 home"><span class="brand-mark">O</span><span>OCTOPUS <b>S1</b></span></a>
+    <nav aria-label="التنقل الرئيسي">
+      <a href="#game" data-ar="اللعبة" data-en="The game">اللعبة</a>
+      <a href="#catalog" data-ar="الكتالوج" data-en="Catalog">الكتالوج</a>
+      <a href="#progress" data-ar="التطوير" data-en="Progress">التطوير</a>
+    </nav>
+    <button class="lang" id="langToggle" type="button" aria-label="Switch to English">EN</button>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="pulse"></span><span data-ar="مشروع لعبة مستقل من EVENTO" data-en="An independent game project by EVENTO">مشروع لعبة مستقل من EVENTO</span></p>
+        <h1><span data-ar="الصحراء تنادي." data-en="The desert is calling.">الصحراء تنادي.</span><br><em data-ar="ورفيقك يعرف الطريق." data-en="Your companion knows the way.">ورفيقك يعرف الطريق.</em></h1>
+        <p class="lead" data-ar="استكشف عالماً صحراوياً غامضاً، أعد تشغيل محطات الإرسال، وأنقذ فرق الاستكشاف مع روبوت الأخطبوط." data-en="Explore a mysterious desert, restore relay stations, and rescue field teams with your octopus robot companion.">استكشف عالماً صحراوياً غامضاً، أعد تشغيل محطات الإرسال، وأنقذ فرق الاستكشاف مع روبوت الأخطبوط.</p>
+        <div class="hero-actions"><a class="button primary" href="#game" data-ar="اكتشف اللعبة" data-en="Discover the game">اكتشف اللعبة</a><span class="status-pill"><i></i><span data-ar="قيد التصميم" data-en="In design">قيد التصميم</span></span></div>
+        <div class="hero-stats"><div><strong>01</strong><span data-ar="منطقة لعب أولى" data-en="First playable zone">منطقة لعب أولى</span></div><div><strong>01</strong><span data-ar="رفيق روبوت" data-en="Robot companion">رفيق روبوت</span></div><div><strong>AR / EN</strong><span data-ar="من البداية" data-en="From day one">من البداية</span></div></div>
+      </div>
+      <div class="hero-art"><img src="../artwork/concept/octopus-s1-concept-board.jpg" alt="لوحة تصور أولية لعالم Octopus S1 ورفيق الأخطبوط"><span class="image-tag" data-ar="تصور بصري • ليس لقطة من اللعبة" data-en="Concept art • not in-game footage">تصور بصري • ليس لقطة من اللعبة</span><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div></div>
+    </section>
+
+    <section class="section intro" id="game">
+      <div class="section-head"><p class="eyebrow" data-ar="الفكرة الأساسية" data-en="The core idea">الفكرة الأساسية</p><h2 data-ar="إنقاذ، استكشاف، ورفيق صغير بثمانية أذرع." data-en="Rescue, explore, and trust a little friend with eight arms.">إنقاذ، استكشاف، ورفيق صغير بثمانية أذرع.</h2></div>
+      <p class="section-copy" data-ar="Octopus S1 مغامرة هاتف أحادية اللاعب. تبدأ من محطة آمنة، تتبع إشارات متقطعة، تجمع ما تحتاج إليه، وتعيد الاتصال قبل عودتك إلى نقطة الإخلاء." data-en="Octopus S1 is a single-player mobile adventure. Leave a safe station, follow broken signals, gather what you need, and restore contact before reaching extraction.">Octopus S1 مغامرة هاتف أحادية اللاعب. تبدأ من محطة آمنة، تتبع إشارات متقطعة، تجمع ما تحتاج إليه، وتعيد الاتصال قبل عودتك إلى نقطة الإخلاء.</p>
+      <div class="loop"><div><span>01</span><b data-ar="استكشف" data-en="Explore">استكشف</b><small data-ar="اتبع آثار الإشارة" data-en="Track the signal">اتبع آثار الإشارة</small></div><div><span>02</span><b data-ar="اجمع" data-en="Gather">اجمع</b><small data-ar="استعن بالرفيق" data-en="Use your companion">استعن بالرفيق</small></div><div><span>03</span><b data-ar="أعد الاتصال" data-en="Reconnect">أعد الاتصال</b><small data-ar="فعّل محطة الإرسال" data-en="Restore a relay">فعّل محطة الإرسال</small></div><div><span>04</span><b data-ar="أخلِ" data-en="Extract">أخلِ</b><small data-ar="أعد الجميع بأمان" data-en="Bring everyone home">أعد الجميع بأمان</small></div></div>
+    </section>
+
+    <section class="section zones" id="catalog">
+      <div class="section-head"><p class="eyebrow" data-ar="كتالوج العالم" data-en="World catalog">كتالوج العالم</p><h2 data-ar="أربعة أماكن، وإشارة واحدة." data-en="Four places. One signal.">أربعة أماكن، وإشارة واحدة.</h2><p class="muted" data-ar="هذه بطاقات اتجاه فني أولي. ستتحول إلى مشاهد فعلية بعد اعتماد تصميم الشريحة." data-en="These are early art-direction cards. They become real game scenes after the slice design is approved.">هذه بطاقات اتجاه فني أولي. ستتحول إلى مشاهد فعلية بعد اعتماد تصميم الشريحة.</p></div>
+      <div class="zone-grid">
+        <article class="zone-card oasis"><span>ZONE 01</span><h3 data-ar="قرية الواحة" data-en="Oasis Haven">قرية الواحة</h3><p data-ar="محطة آمنة ومجتمع ينتظر عودة الاتصال." data-en="A safe station and a community waiting for a signal.">محطة آمنة ومجتمع ينتظر عودة الاتصال.</p></article>
+        <article class="zone-card canyon"><span>ZONE 02</span><h3 data-ar="وادي المرايا" data-en="Mirror Canyon">وادي المرايا</h3><p data-ar="ممرات صخرية تكشف الضوء ما تخفيه." data-en="Rock passages where light reveals hidden paths.">ممرات صخرية تكشف الضوء ما تخفيه.</p></article>
+        <article class="zone-card relay"><span>ZONE 03</span><h3 data-ar="برج الإرسال" data-en="The Relay">برج الإرسال</h3><p data-ar="أعد تشغيل الشبكة وحدد نقطة الإخلاء." data-en="Restore the network and mark an extraction point.">أعد تشغيل الشبكة وحدد نقطة الإخلاء.</p></article>
+        <article class="zone-card dunes"><span>ZONE 04</span><h3 data-ar="حقل العواصف" data-en="Storm Flats">حقل العواصف</h3><p data-ar="منطقة لاحقة تتطلب قراءة الريح والرؤية." data-en="A later region built around wind and visibility.">منطقة لاحقة تتطلب قراءة الريح والرؤية.</p></article>
+      </div>
+    </section>
+
+    <section class="section companion">
+      <div class="companion-graphic"><div class="bot-eye">●</div><div class="tentacles">〰 〰 〰 〰</div><span class="bot-label">OCTO / S1</span></div>
+      <div><p class="eyebrow" data-ar="رفيقك" data-en="Your companion">رفيقك</p><h2 data-ar="يرى ما يفوتك." data-en="It sees what you miss.">يرى ما يفوتك.</h2><p data-ar="رفيق الأخطبوط هو قلب الهوية واللعب: يرسل نبضة كشف، يشير إلى الموارد، ويتعلم العودة إلى اللاعب. شكله وألوانه هنا تصور أولي إلى أن يندمج نموذج ثلاثي الأبعاد فعلي." data-en="The octopus companion shapes both identity and play: it sends a scan pulse, points to resources, and learns to return to the player. Its shape and colors are early concept until a 3D model is integrated.">رفيق الأخطبوط هو قلب الهوية واللعب: يرسل نبضة كشف، يشير إلى الموارد، ويتعلم العودة إلى اللاعب. شكله وألوانه هنا تصور أولي إلى أن يندمج نموذج ثلاثي الأبعاد فعلي.</p><span class="status-pill"><i></i><span data-ar="تصميم أولي" data-en="Early concept">تصميم أولي</span></span></div>
+    </section>
+
+    <section class="section progress" id="progress">
+      <div class="section-head"><p class="eyebrow" data-ar="مسار EVENTO" data-en="EVENTO delivery gates">مسار EVENTO</p><h2 data-ar="كل خطوة لها دليل." data-en="Every step needs evidence.">كل خطوة لها دليل.</h2><p class="muted" data-ar="نعرض التصور منفصلاً عن اللعب الفعلي. لا يظهر تنزيل حتى يثبت تشغيل APK على جهاز Android." data-en="Concept stays distinct from real gameplay. Download appears only after an APK is proven on an Android device.">نعرض التصور منفصلاً عن اللعب الفعلي. لا يظهر تنزيل حتى يثبت تشغيل APK على جهاز Android.</p></div>
+      <ol class="gates"><li class="done"><span>G0</span><b data-ar="تعريف الاستقلال" data-en="Independent charter">تعريف الاستقلال</b><small data-ar="تم إعداد الميثاق" data-en="Charter drafted">تم إعداد الميثاق</small></li><li class="active"><span>G1</span><b data-ar="التصميم والكتالوج" data-en="Design and catalog">التصميم والكتالوج</b><small data-ar="قيد الإعداد" data-en="In progress">قيد الإعداد</small></li><li><span>G2</span><b data-ar="شريحة Unity" data-en="Unity slice">شريحة Unity</b><small data-ar="الـscaffold أُضيف؛ لم يُشغّل" data-en="Scaffold added; not run yet">الـscaffold أُضيف؛ لم يُشغّل</small></li><li><span>G3</span><b data-ar="APK على جهاز" data-en="APK on device">APK على جهاز</b><small data-ar="لم تبدأ" data-en="Not started">لم تبدأ</small></li></ol>
+    </section>
+  </main>
+  <footer><a class="brand" href="#home"><span class="brand-mark">O</span><span>OCTOPUS <b>S1</b></span></a><p data-ar="مشروع مستقل ضمن EVENTO • © 2026" data-en="An independent EVENTO project • © 2026">مشروع مستقل ضمن EVENTO • © 2026</p><a href="../docs/01_PROJECT_CHARTER_AR.md" data-ar="اقرأ ميثاق المشروع" data-en="Read the project charter">اقرأ ميثاق المشروع</a></footer>
+</body>
+</html>
