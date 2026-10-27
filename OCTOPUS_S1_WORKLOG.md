@@ -48,79 +48,83 @@ This section is a dated snapshot; use later verified evidence when available.
 - Temporary Cloud credentials may exist according to the latest Cloud work.
   Check current evidence/owner before another Cloud attempt; do not expose secret values.
 
-## Latest reviewed state — 2026-10-26
+## Latest reviewed state — 2026-10-27
 
-Review basis: local cycle-1 report at `95844ca12ab54f2ab3ae38667adf1905adc03978`
-and its code changes. See [cycle-1 review](docs/10_REVIEW_CYCLE_1_AR.md).
-The initial snapshot above is superseded for current decisions.
+Review basis: local cycle-2 report at `ae9b31b82b5a449dd70d615b4fd82e9ec5bbfb29`
+and source `9d4a1ce065834cfc73dfa153b60d007249838dda`.
+See [cycle-2 review and delivery instructions](docs/11_REVIEW_CYCLE_2_AR.md).
 
-- Active project/editor pin: Unity 6000.6.4f1, owner-selected installed editor according to the
-  local report, consistent with ProjectVersion and build guard. Do not downgrade automatically.
-- Local report: import and PlayMode 7/7 passed, Dev APK 0.1.0 (1) produced from
-  `bf8d6ecfaacdaa4822a812b57335a07bfd4d98df`; size/hash are preserved below.
-- Reviewer checked source/test definitions and ran the two Python setup tests successfully.
-  Reviewer has not obtained/rehashed the local APK or XML, run Unity on this Windows host,
-  verified the reported Android metadata independently or tested a phone.
-- Channel-aware code exists. Dev build is reported; LiveCandidate is not produced.
-  Device testing and side-by-side installation/save isolation remain unverified. G2/G3 stay open.
-- Review found stale test-result acceptance, continued frame processing after touch Pause,
-  and incomplete build/signing-state restoration. These are source-review findings, not
-  device-reproduced failures. Address them in the next local cycle.
-- First local cycle used existing hardware; prior account-wide Cloud charges remain unknown.
-- Owner-first destination remains local APK + GitHub Draft Release; no public distribution.
+- Unity stays 6000.6.4f1. Source review supports the R1–R4 changes and the added
+  physics-sync regression fix; do not restart those completed slices without a concrete failure.
+- Local report: EditMode 5/5, PlayMode 11/11, 0 skipped; Dev 0.1.1 (2) built,
+  verified locally and retained beside test evidence/XML. Prior Dev 0.1.0 (1) retained unchanged.
+- Reviewer independently ran **12/12 release-gate checks on PowerShell 7.4.6/Linux** and
+  **2/2 Python setup tests** successfully. Reviewer did not run Unity or retrieve/re-hash the
+  owner's APK/XML, connect a phone or create a Draft Release.
+- Dev 0.1.1 reported SHA-256:
+  `f001031cd7563be7351d91bd9aff63e65da29802df1e756083d849920283790d`.
+- Current remaining gates: local gh login/Draft delivery, physical Android evidence,
+  owner-managed Live key/LiveCandidate and owner acceptance. G3/Live stay open.
+- Official portable gh download/extraction is already within the authorized delivery scope.
+  Do not stop for a repeated download permission question; owner authentication remains local.
+- Budget remains USD 20 total across attempts. Local cycle 2 reports no new charge;
+  prior account-wide Cloud charges remain unknown. No new paid build is requested.
 
 ## CHATGPT — Active work order
 
-**Order ID:** OS1-LOCAL-002
+**Order ID:** OS1-LOCAL-003
 
 **Revision:** 1
 
-**Status:** READY_FOR_LOCAL_AGENT — supersedes unfinished steps of OS1-LOCAL-001 after a safe checkpoint
+**Status:** READY_FOR_LOCAL_AGENT — delivery/device/Live-readiness cycle
 
-**Base source/report:** `95844ca12ab54f2ab3ae38667adf1905adc03978`
+**Base report:** `ae9b31b82b5a449dd70d615b4fd82e9ec5bbfb29`
 
-**Objective:** Repair the reviewed release/input gates, produce the next Dev APK, deliver it
-owner-first, obtain real Android evidence, then prepare a correctly signed Live candidate.
+**Existing Dev source:** `9d4a1ce065834cfc73dfa153b60d007249838dda`
 
-Read [the detailed review and acceptance cases](docs/10_REVIEW_CYCLE_1_AR.md).
-Do not rerun already completed host setup or reinstall Unity to follow historical pins.
+**Objective:** Deliver the existing Dev 0.1.1 APK privately to the owner, obtain real-device
+evidence, and build a separately signed LiveCandidate when the local owner inputs are available.
+
+Read [cycle-2 review / cycle-3 instructions](docs/11_REVIEW_CYCLE_2_AR.md).
+Do not rebuild Dev 0.1.1 just to change its delivery tooling or documentation.
 
 **Execute in order:**
-1. Checkpoint current local work and integrate this order. If a build is running, preserve
-   its outcome and avoid concurrent editors/builds in the same checkout.
-2. **R1:** bind valid nonempty PlayMode results to actual tested inputs/editor/XML fingerprint.
-   Reject stale/mismatched/failing results before building; verify relevant inputs remain stable.
-3. **R2:** stop gameplay immediately when touch input changes state from Playing to Paused;
-   test multi-touch order, no paused collection/interaction and no stuck input on resume.
-4. **R3 before LiveCandidate:** restore all touched build/signing state on success and failure
-   without discarding unrelated edits; include keystoreName and diagnostic flags.
-5. **R4:** reconcile the current test-framework declaration/resolution with Unity 6000.6.4f1,
-   document actual built-in behavior, and account for retained/distributed versionCodes beyond one folder.
-6. Run the updated relevant suite; keep exact counts, source fingerprints, XML hash and logs.
-   Build Dev **0.1.1** with the next unused increasing versionCode (2 only if no higher code
-   exists). Retain Dev 0.1.0 (1) unchanged as historical evidence.
-7. Inspect actual APK identity/version/debuggability/ARM64/signature, rehash it, deliver locally
-   and create/update a **GitHub Draft Release** for that exact APK/source. Attach manifest,
-   checksum and sanitized test evidence. Do not publish it.
-8. On an owner-authorized Android ARM64 device, exercise install/upgrade, touch mission,
-   pause/focus recovery, AR/EN, persistence and a second run; record measured performance
-   and sanitized logcat. Do not delete an old prototype/Live install to conceal a signing mismatch.
-9. If the owner supplies the persistent Live key locally, build/test LiveCandidate and
-   side-by-side save isolation. Otherwise keep that gate open, complete independent tasks
-   and state the specific local owner action once. Never label a candidate Approved.
+1. Checkpoint/integrate safely. Preserve the retained APKs and cycle-2 test evidence.
+2. Find an existing suitable gh or download/extract the **official portable GitHub CLI**
+   outside the repository, without admin installation or global PATH changes. This necessary,
+   reversible download is within the previously authorized owner-first delivery scope;
+   **do not ask for permission to download it again**. Verify architecture, official asset
+   checksum and gh version. Verified release/asset details are in the review document.
+3. Let the owner perform `gh auth login --hostname github.com --web` locally if needed.
+   Do not ask for passwords/PATs in chat, print tokens or request broad unrelated credentials.
+   Missing interactive login may block remote upload, not independent local preparation.
+4. Verify the existing Dev 0.1.1 (2) APK, manifest and retained evidence, then run
+   `scripts/new-draft-release.ps1 -Channel Dev -VersionCode 2 -Gh <verified-gh.exe>`.
+   Check for an existing draft before retrying. Confirm **isDraft=true**, correct repository,
+   source and complete assets. Record the draft URL, download its APK to a verification folder
+   and compare the SHA-256 with the local original. Never publish the draft.
+5. On an authorized Android ARM64 phone, test this exact APK: install/upgrade, full touch
+   mission, pause/multi-touch/focus, repeat/restart, save and AR/EN rendering. Record actual
+   device, duration, performance method/results and sanitized logcat. If no phone is connected,
+   prepare the checklist and state the USB/debugging owner action once; continue other tasks.
+6. Check whether the owner has already created the persistent Live key. If absent, prepare
+   the existing local helper for the owner to run and enter secrets locally with an offline
+   backup. Do not generate a second key over an existing identity or collect its contents.
+7. When ready, build LiveCandidate 0.1.1 with the next unused versionCode for its application ID
+   (2 only if the current maximum remains 1). Inspect signing/flags and test side-by-side
+   installation/save isolation. A signature conflict with an old prototype does not authorize
+   deleting its installation/data. Record the candidate; do not mark it Approved.
+8. Archive cycle 2's execution fields before replacing them. Update the execution result,
+   draft/device evidence and release register without altering old immutable artifact records.
 
-**Allowed scope:** Existing game fixes/tests/build tooling/evidence; local resources first.
-No rewrite, public APK/release, store submission, website deployment, automatic PR merge or Live approval.
-The USD 20 ceiling remains phase-wide; do not start another paid Cloud attempt for this order.
+**Allowed scope:** Existing authorized local resources, necessary portable gh setup, private
+Draft Release delivery, device validation and LiveCandidate preparation. No public upload,
+store submission, automatic merge/Live acceptance or new paid Cloud attempt.
 
-**Test delivery preference:** OWNER_LOCAL_AND_GITHUB_DRAFT — unchanged.
-A missing installed gh is not necessarily a blocker: use an existing authorized tool/session,
-the official portable CLI or the authorized GitHub UI if available. Owner login stays local.
-If release access is absent, complete local delivery and report that one remote-delivery dependency.
-
-**Acceptance:** R1–R3 failure-path tests plus a fresh source-linked test run and inspected Dev APK;
-private draft/local delivery; a truthful device report or explicit device dependency. Live remains
-pending until the exact candidate is tested and the owner accepts its version/fingerprint.
+**Acceptance:** Existing APK delivered locally and as a verified owner-accessible Draft Release;
+phone evidence if available and an inspected LiveCandidate if the owner key is available.
+For each unavailable human dependency, record the exact next local action, complete independent
+work, and leave that gate open. Never substitute an editor run for device acceptance.
 
 ## CLAUDE CODE / LOCAL CODEX — Execution result
 
@@ -197,24 +201,25 @@ Never paste credentials, private signing data or raw unsanitized logs here.
 
 ## CHATGPT — Review and next decision
 
-**Reviewed result ID/commit:** OS1-LOCAL-001 / Revision 1 / cycle 1;
-`95844ca12ab54f2ab3ae38667adf1905adc03978`.
+**Reviewed result:** OS1-LOCAL-002 / Revision 1 / cycle 2 at
+`ae9b31b82b5a449dd70d615b4fd82e9ec5bbfb29`.
 
-**Decision:** advance with corrections. Local import/test/build progress is recorded as reported
-evidence; no independent APK/XML/device verification or Live acceptance is claimed by this review.
+**Decision:** advance to private delivery and device/Live-readiness work. Source review supports
+R1–R4 closure for this iteration. The reviewer independently reran 12/12 script gate checks and
+2/2 setup tests; Unity/Android/real-device outcomes remain attributed to the local report.
 
-**Required corrections:** R1 test provenance, R2 Pause/input state, R3 settings/signing cleanup,
-and R4 configuration/version-record consistency. See [review](docs/10_REVIEW_CYCLE_1_AR.md).
+**Next order/revision:** OS1-LOCAL-003 / Revision 1, active above.
 
-**Next order/revision:** OS1-LOCAL-002 / Revision 1, active above.
+**No repeated permission gate:** official portable gh download is authorized as necessary
+delivery tooling. Owner-local authentication, physical USB access and private key entry still
+require the owner's real local actions; do not describe them as remote capabilities of ChatGPT.
 
-**Next expected result:** updated tests + Dev 0.1.1, owner-only Draft Release/local APK,
-phone results if available, and LiveCandidate readiness. Preserve the previous APK/report.
+**Expected next report:** verified Draft URL/uploaded-APK fingerprint, actual phone results or
+explicit device dependency, and LiveCandidate or explicit key dependency. No unnecessary Dev
+rebuild for a docs/tool-only change. Keep all prior artifacts and cycle reports.
 
-The preserved execution section above still describes cycle 1 until the local agent starts order 002.
-Archive its material results before replacing the execution fields. Do not present an old report
-as execution of the new order. Continue independent authorized work without awaiting a new
-ChatGPT message after each successful step; Live acceptance remains the owner's decision.
+The execution section above still describes cycle 2 until the local agent executes order 003.
+Archive it before replacing the fields and clearly identify the order actually executed.
 
 ## Release register
 
@@ -245,3 +250,8 @@ Keep build/source SHA separate from a later documentation/report commit.
   ground fall-through after restart; R1 source-bound test evidence; R3 full build-state snapshot/restore (no git restore);
   R4 test-framework 1.8.0 + committed release register. EditMode 5/5, PlayMode 11/11, release-gate script 12/12.
   Dev 0.1.1 (2) built from `9d4a1ce`. No Draft Release (no GitHub CLI session), no device, no Live key. Cycle-1 report archived.
+
+- 2026-10-27 — ChatGPT reviewed cycle 2 at `ae9b31b82b5a449dd70d615b4fd82e9ec5bbfb29` and issued
+  OS1-LOCAL-003 / Revision 1. Independently passed release-gate checks 12/12 on
+  PowerShell/Linux and Python setup tests 2/2. No Unity/APK/device rerun in this session.
+  Clarified portable gh authorization and prioritized Draft delivery, phone evidence and Live readiness.
